@@ -1,6 +1,7 @@
 # CompositionSearchTrial
 
 STDvsCompos.py:
+
 You are abale to make a high entropy alloy (HEA) with 3 elements using this python script. First, it asks you the size of simulation box.
 After that, you are able to chose 3 elements out of (Mn, Cr, Fe, Co, Ni). The code will create 37 different compositions of your desired 
 HEA. Chosing the number of time steps for the simulation and number of steps you prefer for minimization process, it will equilibrate your
