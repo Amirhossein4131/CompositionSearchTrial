@@ -1,0 +1,121 @@
+ #-------------------- Initializes random number generator -------------------------#
+
+  variable                  rnd equal round(random(0,999999,2764)
+  variable                  T         equal     950
+  variable                  T0        equal     0.2*$T
+
+  # Time variables
+  variable                  dt        equal     0.001         # Time step
+  variable                  damp_t    equal     200*${dt}     # Thermostat damping
+  variable                  damp_p    equal     5000*${dt}    # Barostat damping
+  
+#---------------------------- Atomic setup  ----------------------------------------#
+
+# Interatomic potential information.
+  neigh_modify              delay   0
+  timestep                  ${dt}
+  
+#-------------------------- NPT equilibration  -------------------------------------#
+  
+  # Dynamics starts
+  
+  thermo                 100
+  fix                    p1        all        box/relax   aniso 0.0 vmax 0.001
+  minimize               0.0       0.0        ${maxiter}      20000
+ 
+  unfix                  p1
+  
+  velocity               all       create     $T      ${rnd}  mom    yes  rot  yes  dist  gaussian
+  variable               rnd       equal      round(random(0,999999,0))    # Generates new rnd 
+  reset_timestep         0
+
+ # Verifying thermodynamical properties
+
+  thermo_style           custom    step temp etotal pe press vol
+  reset_timestep         0
+  
+  fix                    f1        all        npt temp   $T  $T  ${damp_t}  aniso 0.0 0.0 ${damp_p} fixedpoint 0.0 0.0 0.0
+  run                    ${t_eq}
+  unfix                  f1
+  reset_timestep         0
+
+#----------------------------  Changing from NPT to NVT ------------------------------------#
+
+  fix                    f1  all   npt  temp  $T $T ${damp_t} iso 0.0 0.0 ${damp_p} fixedpoint 0.0 0.0 0.0
+  variable               dx  equal lx
+  variable               dy  equal ly
+  variable               dz  equal lz
+  fix                    f2  all        vector  1 v_dx
+  fix                    f3  all        vector  1 v_dy
+  fix                    f4  all        vector  1 v_dz
+  thermo_style           custom         step v_dx v_dy v_dz
+  run                    ${t_eq}
+  unfix                  f1
+
+ # Center of the box in 0.0 0.0 0.0
+
+  variable         lx_med       equal (ave(f_f2))/2.0
+  variable         ly_med       equal (ave(f_f3))/2.0
+  variable         lz_med       equal (ave(f_f4))/2.0
+
+#----------------------------- Switching NVT  ---------------------------------------------#
+
+  change_box        all      x final -${lx_med} ${lx_med} y final -${ly_med} ${ly_med} z final -${lz_med} ${lz_med} remap units box
+  unfix             f2
+  unfix             f3
+  unfix             f4
+
+
+#------------------------ Hybrid MD/MC: Swaping the atoms ---------------------------------#
+  reset_timestep         0
+  fix               h1       all       nvt  temp  $T  $T  ${damp_t}
+  fix               s1       all       atom/swap  4   1   ${rnd} $T ke yes semi-grand no types 1 2
+  variable          rnd      equal     round(random(0,999999,0))    # Generates new rnd
+  fix               s2       all       atom/swap  4   1   ${rnd} $T ke yes semi-grand no types 2 3
+  variable          rnd      equal     round(random(0,999999,0))    # Generates new rnd
+  fix               s3       all       atom/swap  4   1   ${rnd} $T ke yes   semi-grand  no types 1 3
+  variable          rnd      equal     round(random(0,999999,0))    # Generates new rnd
+
+  # Monitoring  the number of swap attempts and the number of swap successes by using f_ID[1] and f_ID[2], respectively.
+   
+  thermo_style      custom   step      f_s1[1] f_s1[2] f_s2[1] f_s2[2] f_s3[1] f_s3[2] etotal
+  
+  run               ${t_eq}
+  
+  unfix              h1
+  unfix              s1
+  unfix              s2
+  unfix              s3
+  
+  reset_timestep     0
+  
+#------------------------------- Strain Calculation -------------------------------------------#
+  
+  fix                    f1        all        npt temp   $T  $T  ${damp_t}  aniso 0.0 0.0 ${damp_p} fixedpoint 0.0 0.0 0.0
+  
+  variable               tmp1 equal lx
+  variable               lxo equal ${tmp1}
+  variable               tmp2 equal ly
+  variable               lyo equal ${tmp2}
+  variable               tmp3 equal lz
+  variable               lzo equal ${tmp3}
+  variable               strain equal (abs(lx-v_lxo)/v_lxo)+(abs(ly-v_lyo)/v_lyo)+(abs(lz-v_lzo)/v_lzo) 
+  fix                    strain all print 10 "${strain}" file strainvalues.txt
+  
+  thermo_style           custom step v_strain
+  
+  run                    ${t_eq}
+#-------------------------------- Basic Parameters ---------------------------------------------#   
+  variable               a_1   equal "lx"
+  variable               a_2   equal "ly"
+  variable               a_3   equal "lz"
+ 
+  group 		             kind1 type 1
+  group                  kind2 type 2
+  group                  kind3 type 3
+  
+  variable               numele1 equal count(kind1)
+  variable               numele2 equal count(kind2)
+  variable               numele3 equal count(kind3)
+  
+  print                  """ ${a_1} ${a_2} ${a_3} ${numele1} ${numele2} ${numele3}""" file properties.txt
