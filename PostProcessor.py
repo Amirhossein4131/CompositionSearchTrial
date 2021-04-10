@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 
 elements = ["Fe", "Ni", "Cr", "Co", "Mn"]
 
-print ("Elements are: ", elements)
+print ("Available Elements are: ", elements)
 
 element1 = input ("Choose 1st Element: ")
 print("1st Element is: " + element1)
 
-element2 = input ("Choose 1st Element: ")
+element2 = input ("Choose 2nd Element: ")
 print("2nd Element is: " + element2)
 
-element3 = input ("Choose 1st Element: ")
+element3 = input ("Choose 3rd Element: ")
 print("3rd Element is: " + element3)
 
 range_element1=np.arange(10,100,10) 
@@ -24,7 +24,7 @@ for i in range (9):
 	for j in range (9):
 		for k in range (9):
 			if (range_element1[i] + range_element2[j] + range_element3[k]) == 100:
-				compositions.append(element1+str(range_element1[i])+element2+str(range_element2[j])         +element3+str(range_element3[k]))
+				compositions.append(element1+str(range_element1[i])+element2+str(range_element2[j])+element3+str(range_element3[k]))
 
 compositions.append ("equimolar")	 #Equatomic Composition			
 
@@ -52,4 +52,3 @@ def MeanvsComp(mean, comp):
 
 STDvsComp(std=STD, comp=compositions)
 MeanvsComp(Mean,compositions)
-
