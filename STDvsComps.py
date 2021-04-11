@@ -8,52 +8,6 @@ from mpi4py import MPI                            # To run parallel
 import numpy as np
 import pandas as pd 
 import statistics
-
-#-----------------------------Create Initial Super Cell with One Atom Type------------------------------#
-
-# Simulation Box Boundries  
-xlo = float (input ("Choose xlo: "))
-xhi = float (input ("Choose xhi: "))
-ylo = float (input ("Choose ylo: "))
-yhi = float (input ("Choose yhi: "))
-zlo = float (input ("Choose zlo: "))
-zhi = float (input ("Choose zhi: "))
-
-datainitcmds = ["units metal",
-                "atom_style atomic",
-                "boundary p p p",
-                "lattice fcc 3.5",
-                "region mybox block %d %d %d %d %d %d" %(xlo,xhi,ylo,yhi,zlo,zhi),
-                "create_box 1 mybox",
-                "create_atoms 1 region mybox",
-                "mass 1 2000000",
-                "run 0",
-                "variable N equal count(all)",
-                "write_data initial.data"
-               ]
-
-lmp.commands_list(datainitcmds)
-
-Number_of_Atoms = lmp.get_natoms()
-lmp.command ("clear")
-
-print ("Number of Atoms are: ", Number_of_Atoms)
-
-   
-# Delete "Mass" and Change "1 atom types" to "3 atom types" in initial.data datafile (To prevent errors)
-
-fin = open("initial.data", "rt")
-
-data = fin.read()
-data = data.replace('1 atom types', '3 atom types')
-data = data.replace('1 2000000', ' ' )
-data = data.replace('Masses', ' ')
-
-fin.close()
-fin = open("initiall.data", "wt")
-fin.write(data)
-fin.close()
-
 #-------------------------------------- Define What Compositions are Concerned -------------------------#
 
 elements = ["Fe", "Ni", "Cr", "Co", "Mn"]
@@ -118,8 +72,49 @@ elif element3 == "Co":
 elif element3 == "Mn":
 	mass3 = 54.938044	
 
+#-----------------------------Create Initial Super Cell with One Atom Type------------------------------#
+
+# Simulation Box Boundries  
+xlo = float (input ("Choose xlo: "))
+xhi = float (input ("Choose xhi: "))
+ylo = float (input ("Choose ylo: "))
+yhi = float (input ("Choose yhi: "))
+zlo = float (input ("Choose zlo: "))
+zhi = float (input ("Choose zhi: "))
+
+datainitcmds = ["units metal",
+                "atom_style atomic",
+                "boundary p p p",
+                "lattice fcc 3.5",
+                "region mybox block %d %d %d %d %d %d" %(xlo,xhi,ylo,yhi,zlo,zhi),
+                "create_box 1 mybox",
+                "create_atoms 1 region mybox",
+                "mass 1 2000000",
+                "run 0",
+                "variable N equal count(all)",
+                "write_data initial.data"
+               ]
+
+lmp.commands_list(datainitcmds)
+
+Number_of_Atoms = lmp.get_natoms()
+lmp.command ("clear")
+   
+# Delete "Mass" and Change "1 atom types" to "3 atom types" in initial.data datafile (To prevent errors)
+
+fin = open("initial.data", "rt")
+
+data = fin.read()
+data = data.replace('1 atom types', '3 atom types')
+data = data.replace('1 2000000', '1 %s  #%s \n2 %s  #%s \n3 %s  #%s ' %(mass1, element1, mass2, element2, mass3, element3) )
+
+fin.close()
+fin = open("initiall.data", "wt")
+fin.write(data)
+fin.close()
+
 print ("mass1: ", mass1, "mass2: ", mass2, "mass3: ", mass3)  
-print ("Number of Atoms are: ", Number_of_Atoms) 
+print ("Number of Atoms are: ", Number_of_Atoms)
 
 #------------------------------------------ Making Data Files of Differenet Compositions ---------------------------------#
 
@@ -129,9 +124,6 @@ def compositioncreation(elementtwo,elementthree,elementonepercentage,elementtwop
 	"atom_style atomic",
 	"boundary p p p",
 	"read_data initiall.data",
-	"mass 1 %s" %mass1,
-	"mass 2 %s" %mass2, 
-	"mass 3 %s" %mass3,
 	"group kind1 type 1",
 	"set group kind1 type/subset 2 %d  12345" % elementtwo,
 	"group kind2 type 2",
