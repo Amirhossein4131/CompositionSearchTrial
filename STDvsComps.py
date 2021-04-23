@@ -8,6 +8,7 @@ from mpi4py import MPI                            # To run parallel
 import numpy as np
 import pandas as pd 
 import statistics
+
 #-------------------------------------- Define What Compositions are Concerned -------------------------#
 
 elements = ["Fe", "Ni", "Cr", "Co", "Mn"]
@@ -156,6 +157,7 @@ NumAtoms  = ["Number of %s Atoms = "%element1, "Number of %s Atoms = "%element2,
 
 steps = int(input ("Please Enter Number of Steps: "))
 maxiter = int(input ("Please Enter Number Steps for Minimization: "))
+swap = int (Number_of_Atoms / 4)
 f = int ((steps*0.09))
 
 for i in range (37):
@@ -163,6 +165,7 @@ for i in range (37):
 	lmp.command ("read_data %s.data" %compositions[i])
 	lmp.command ("variable t_eq equal %d" %steps)
 	lmp.command ("variable maxiter equal %d" %maxiter)
+	lmp.command ("variable swaps equal %d" %swap)
 	lmp.command ("pair_style meam/c")
 	lmp.command ("pair_coeff * * library_CoNiCrFeMn.meam Co Ni Cr Fe Mn parameters.meam %s %s %s" %(element1, element2, element3))
 	lines = open('equilibrium.in','r').readlines()
@@ -188,5 +191,10 @@ np.savetxt("BasicProperties_%s%s%s.txt"%(element1, element2, element3), BasicPro
 np.savetxt("STD_%s%s%s.txt"%(element1, element2, element3), STD)
 np.savetxt("Mean_%s%s%s.txt"%(element1, element2, element3), Mean)
 
+#----------------------------------------- Plots -------------------------------------------------#
+
+from PostProcessor import*
+STDvsComp(std=STD, comp=compositions)
+MeanvsComp(Mean,compositions)
 #------------------------------------------ End --------------------------------------------------#   
 print ("DONE")
