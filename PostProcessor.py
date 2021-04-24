@@ -29,9 +29,9 @@ for i in range (9):
 compositions.append ("equimolar")	 #Equatomic Composition			
 
 print (compositions)
-STD = np.loadtxt(fname="STD_%s%s%s.txt" %(element1, element2, element3))
+STD = np.loadtxt(fname="STD.txt")
 print (STD)
-Mean = np.loadtxt(fname="Mean_%s%s%s.txt"%(element1, element2, element3))
+Mean = np.loadtxt(fname="Mean.txt")
 print (Mean)
 
 def STDvsComp(std, comp):
@@ -41,7 +41,8 @@ def STDvsComp(std, comp):
 	plt.xticks(rotation = 90)
 	plt.scatter(comp, std)
 	plt.show()
-	
+	return None
+
 def MeanvsComp(mean, comp):
 	plt.xlabel("%s%s%s Compositions"%(element1,element2,element3))
 	plt.ylabel("Mean of Strain")
@@ -49,6 +50,7 @@ def MeanvsComp(mean, comp):
 	plt.xticks(rotation = 90)
 	plt.scatter(comp, mean)
 	plt.show()
+	return None
 
-STDvsComp(std=STD, comp=compositions)
+STDvsComp(STD, comp=compositions)
 MeanvsComp(Mean,compositions)
