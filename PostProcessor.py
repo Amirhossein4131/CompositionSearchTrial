@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 elements = ["Fe", "Ni", "Cr", "Co", "Mn"]
 
 print ("Available Elements are: ", elements)
-
+print ("Please Enter the Elements You Have Been Searched to be Used for the Plotting")
 element1 = input ("Choose 1st Element: ")
 print("1st Element is: " + element1)
 
