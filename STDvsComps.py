@@ -8,7 +8,7 @@ from mpi4py import MPI                            # To run parallel
 import numpy as np
 import pandas as pd 
 import statistics
-
+import os
 #-------------------------------------- Define What Compositions are Concerned -------------------------#
 
 elements = ["Fe", "Ni", "Cr", "Co", "Mn"]
@@ -148,54 +148,97 @@ lmp.commands_list(compositioncreation(int (Number_of_Atoms/3),int(Number_of_Atom
 
 
 #------------------------------------ Runung the Simulation for 37 Different Compositions ------------------------------# 
-BasicProperties = []
 
+STD = []
+Mean= []
 LattParms = ["a_1=", "a_2=", "a_3="]
 NumAtoms  = ["Number of %s Atoms="%element1, "Number of %s Atoms="%element2, "Number of %s Atoms="%element3]	
-
 steps = int(input ("Please Enter Number of Steps: "))
-maxiter = int(input ("Please Enter Number Steps for Minimization: "))
+maxiter = int(input ("Please Enter Number of Steps for Minimization: "))
 swap = int (Number_of_Atoms / 4)
-swapiter = int(input ("Please Enter Number Steps for Swap Command: "))
+swapiter = int(input ("Please Enter Number of Steps for MD/MC run Command: "))
 f = int ((steps*0.09))
+b = 1
 
-for i in range (37):
-	lmp.command (" units metal")
-	lmp.command ("read_data %s.data" %compositions[i])
-	lmp.command ("variable t_eq equal %d" %steps)
-	lmp.command ("variable maxiter equal %d" %maxiter)
-	lmp.command ("variable swaps equal %d" %swap)
-	lmp.command ("variable swapiter equal %d" %swapiter)
-	lmp.command ("pair_style meam/c")
-	lmp.command ("pair_coeff * * library_CoNiCrFeMn.meam Co Ni Cr Fe Mn parameters.meam %s %s %s" %(element1, element2, element3))
+#-------------------------- Initial lammps commands
+
+def initial_lmp_commands():
+	cmd = [
+	"units metal",
+	"read_data %s.data" %compositions[i],
+	"variable t_eq equal %d" %steps,
+	"variable maxiter equal %d" %maxiter,
+	"variable swaps equal %d" %swap,
+	"variable swapiter equal %d" %swapiter,
+	"pair_style meam/c",
+	"pair_coeff * * library_CoNiCrFeMn.meam Co Ni Cr Fe Mn parameters.meam %s %s %s" %(element1, element2, element3),
+	]
+	return cmd
+
+#------------------------- Write basic data information foe EACH composition explicitly
+
+dir_folder="post-data_NumberofAtoms_LatticeConstants_STD_Mean"
+def write_to_file ():
+	Basic=open ("%s_BasicProperties.txt"%compositions[i], "w+")
+	Basic.write (
+			"Simulation "+str(b)+" is Finished"+"\n\n"+str(compositions[i])+"\n\n"
+			+str(LattParms[0])+str(a1)+"\n"+str(LattParms[1])+str(a2)+"\n"
+			+str(LattParms[2])+str(a3)+"\n\n"+str(NumAtoms[0])+str(Numele1Atoms)+
+			"\n"+str(NumAtoms[1])+str(Numele2Atoms)+"\n"+str(NumAtoms[2])+
+			str(Numele3Atoms)+"\n"+"STD="+str(stdd)+"\n"+"Mean="+str(mean)
+		    )
+	Basic.close()
+	try:
+		os.mkdir(dir_folder)
+	except:
+		print('dir is known')
+		os.system('mv *.txt '+dir_folder)
+	return None
+
+#--------------------------- A function for flushing data on the terminal screen
+
+def flush():
+	print (
+	"\n\n\n\n\n\n"+"Simulation "+str(b)+"/%d is Finished"%len(compositions)+"\n\n"+str(compositions[i])+"\n\n"+str(LattParms[0])
+	+str(a1)+"\n"+str(LattParms[1])+str(a2)+"\n"+str(LattParms[2])+str(a3)+"\n\n"+str(NumAtoms[0])+str(Numele1Atoms)
+	+"\n"+str(NumAtoms[1])+str(Numele2Atoms)+"\n"+str(NumAtoms[2])+str(Numele3Atoms)+"\n"+"STD="+str(stdd)+
+	"\n"+"Mean="+str(mean)+"\n\n\n\n\n\n", flush=True
+	      )
+	return None
+
+#--------------------------- Final "for" loop to do the simulation
+for i in range (len(compositions)):
+	lmp.commands_list(initial_lmp_commands())
 	lines = open('equilibrium.in','r').readlines()
 	for line in lines: lmp.command(line)
-	data = np.loadtxt(fname="strainvalues.txt")[f :]
+	data = np.loadtxt(fname="strainvalues.data")[f :]
 	stdd = np.std (data)
 	mean = statistics.mean(data)
-	STD = open ("STD.txt","a+")
-	Mean = open ("Mean.txt", "a+")
-	STD.write("%f \n" %stdd)
-	Mean.write("%f \n" %mean)
-	prop = open('properties.txt','r').read().split(" ")
+	# save numbers for plots
+	STD.append (stdd)
+	Mean.append (mean)
+	# Calculate basic data to be written in file for each composition
+	prop = open('properties.data','r').read().split(" ")
 	a1 = float(prop[1]) / (xhi-xlo)
 	a2 = float(prop[2]) / (yhi-ylo)
 	a3 = float(prop[3]) / (zhi-zlo)
 	Numele1Atoms = prop[4]
 	Numele2Atoms = prop[5]
 	Numele3Atoms = prop[6]
-	Basic = open ("Basic_properties.txt", "a+")
-	Basic.write(str(compositions[i])+"\n"+str(LattParms[0])+str(a1)+"  "+str(LattParms[1])+str(a2)+"  "+str(LattParms[2])+str(a3)+"\n"+str(NumAtoms[0])+str(Numele1Atoms)+"  "+str(NumAtoms[1])+str(Numele2Atoms)+"  "+str(NumAtoms[2])+str(Numele3Atoms)+"STD="+str(stdd)+"   Mean="+str(mean)+"\n\n")
+	# Write data to file
+	write_to_file()
 	lmp.command ("clear")
-	print ("%dth Simulation is Finished"%i)
+	# Flush to screen
+	flush()
+	b += 1
 #----------------------------------------- Plots -------------------------------------------------#
-STD.close()
-Mean.close()
-Basic.close()
+np.savetxt("STD.txt", STD)
+np.savetxt("Mean.txt", Mean)
 
 from PostProcessor import*
 STDvsComp(STD, comp=compositions)
 MeanvsComp(Mean,compositions)
 
 #------------------------------------------ End --------------------------------------------------#   
+
 print ("DONE")
