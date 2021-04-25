@@ -100,7 +100,7 @@
   variable               tmp3 equal lz
   variable               lzo equal ${tmp3}
   variable               strain equal (abs(lx-v_lxo)/v_lxo)+(abs(ly-v_lyo)/v_lyo)+(abs(lz-v_lzo)/v_lzo) 
-  fix                    strain all print 10 "${strain}" file strainvalues.txt
+  fix                    strain all print 10 "${strain}" file strainvalues.data
   
   thermo_style           custom step v_strain
   
@@ -118,4 +118,4 @@
   variable               numele2 equal count(kind2)
   variable               numele3 equal count(kind3)
   
-  print                  """ ${a_1} ${a_2} ${a_3} ${numele1} ${numele2} ${numele3}""" file properties.txt
+  print                  """ ${a_1} ${a_2} ${a_3} ${numele1} ${numele2} ${numele3}""" file properties.data
