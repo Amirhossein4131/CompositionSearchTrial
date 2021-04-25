@@ -197,13 +197,20 @@ def write_to_file ():
 
 #--------------------------- A function for flushing data on the terminal screen
 
-def flush():
-	print (
+def Print_to_Terminal():
+	EsentialProperties = open ("essential.data", "w+")
+	EsentialProperties.write(
 	"\n\n\n\n\n\n"+"Simulation "+str(b)+"/%d is Finished"%len(compositions)+"\n\n"+str(compositions[i])+"\n\n"+str(LattParms[0])
 	+str(a1)+"\n"+str(LattParms[1])+str(a2)+"\n"+str(LattParms[2])+str(a3)+"\n\n"+str(NumAtoms[0])+str(Numele1Atoms)
 	+"\n"+str(NumAtoms[1])+str(Numele2Atoms)+"\n"+str(NumAtoms[2])+str(Numele3Atoms)+"\n"+"STD="+str(stdd)+
-	"\n"+"Mean="+str(mean)+"\n\n\n\n\n\n", flush=True
-	      )
+	"\n"+"Mean="+str(mean)+"\n\n\n\n\n\n"
+	                        )
+	EsentialProperties.close()
+	fileObject = open ("essential.data", "r")
+	filecontent = fileObject.read()
+	print (filecontent)
+	fileObject.flush()
+	fileObject.close()
 	return None
 
 #--------------------------- Final "for" loop to do the simulation
@@ -228,8 +235,8 @@ for i in range (len(compositions)):
 	# Write data to file
 	write_to_file()
 	lmp.command ("clear")
-	# Flush to screen
-	flush()
+	# Print Data on the Terminal Window
+	Print_to_Terminal()
 	b += 1
 #----------------------------------------- Plots -------------------------------------------------#
 np.savetxt("STD.txt", STD)
