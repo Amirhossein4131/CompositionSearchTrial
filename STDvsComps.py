@@ -9,19 +9,30 @@ import numpy as np
 import pandas as pd 
 import statistics
 import os
+import json
+
+#---------------------------------------- Open json File that Contains Inputs --------------------------#
+
+with open('input.json') as json_file:
+	Json = json.load(json_file)
+	element1 = Json['element1']
+	element2 = Json['element2']
+	element3 = Json['element3']
+	xlo = Json['xlo']
+	xhi = Json['xhi']
+	ylo = Json['ylo']
+	yhi = Json['yhi']
+	zlo = Json['zlo']
+	zhi = Json['zhi']
+	steps = Json['steps']
+	maxiter = Json['maxiter']
+	swapiter = Json['swapiter']
+
+# Check input data
+print ("\n\n\n\n\n","element1=",element1,"element2=",element2,"element3=",element3,
+        "xlo=",xlo,"xhi=",xhi,"ylo=",ylo,"yhi=",yhi,"zlo=",zlo,"zhi=",zhi
+        ,"steps=",steps,"maxiter=",maxiter,"swapiter=",swapiter,"\n\n\n\n\n\n")	
 #-------------------------------------- Define What Compositions are Concerned -------------------------#
-
-elements = ["Fe", "Ni", "Cr", "Co", "Mn"]
-print ("Available Elements are: ", elements, "You Can Choose Only Three")
-
-element1 = input ("Choose 1st Element: ")
-print("1st Element is: " + element1)
-
-element2 = input ("Choose 2nd Element: ")
-print("2nd Element is: " + element2)
-
-element3 = input ("Choose 3rd Element: ")
-print("3rd Element is: " + element3)
 
 range_element1=np.arange(10,100,10) 
 range_element2=np.arange(10,100,10)
@@ -74,14 +85,6 @@ elif element3 == "Mn":
 	mass3 = 54.938044	
 
 #-----------------------------Create Initial Super Cell with One Atom Type------------------------------#
-
-# Simulation Box Boundries  
-xlo = float (input ("Choose xlo: "))
-xhi = float (input ("Choose xhi: "))
-ylo = float (input ("Choose ylo: "))
-yhi = float (input ("Choose yhi: "))
-zlo = float (input ("Choose zlo: "))
-zhi = float (input ("Choose zhi: "))
 
 datainitcmds = ["units metal",
                 "atom_style atomic",
@@ -153,10 +156,7 @@ STD = []
 Mean= []
 LattParms = ["a_1=", "a_2=", "a_3="]
 NumAtoms  = ["Number of %s Atoms="%element1, "Number of %s Atoms="%element2, "Number of %s Atoms="%element3]	
-steps = int(input ("Please Enter Number of Steps: "))
-maxiter = int(input ("Please Enter Number of Steps for Minimization: "))
 swap = int (Number_of_Atoms / 4)
-swapiter = int(input ("Please Enter Number of Steps for MD/MC run Command: "))
 f = int ((steps*0.09))
 b = 1
 
