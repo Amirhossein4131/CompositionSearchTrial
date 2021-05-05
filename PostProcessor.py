@@ -32,7 +32,7 @@ def STDvsComp(std, comp):
 	plt.xlabel("%s%s%s Compositions" %(element1,element2,element3))
 	plt.ylabel("Standard Deviation")
 	plt.title ("Standard Deviation vs Different Compositions")
-	plt.xticks(rotation = 90)
+	plt.xticks(rotation = 45)
 	plt.scatter(comp, std)
 	plt.show()
 	return None
