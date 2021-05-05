@@ -1,0 +1,14 @@
+{
+  "element1" : "Ni",
+  "element2" : "Co",
+  "element3" : "Cr",
+  "xlo" : -2,
+  "xhi" : 2,
+  "ylo" : -2,
+  "yhi" : 2,
+  "zlo" : -2,
+  "zhi" : 2,
+  "steps" : 150,
+  "maxiter" : 0,
+  "swapiter" : 0
+}
