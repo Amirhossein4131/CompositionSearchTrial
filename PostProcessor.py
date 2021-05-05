@@ -1,18 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 
-elements = ["Fe", "Ni", "Cr", "Co", "Mn"]
-
-print ("Available Elements are: ", elements)
-print ("Please Enter the Elements You Have Been Searched to be Used for the Plotting")
-element1 = input ("Choose 1st Element: ")
-print("1st Element is: " + element1)
-
-element2 = input ("Choose 2nd Element: ")
-print("2nd Element is: " + element2)
-
-element3 = input ("Choose 3rd Element: ")
-print("3rd Element is: " + element3)
+with open('input.json') as json_file:
+	Json = json.load(json_file)
+	element1 = Json['element1']
+	element2 = Json['element2']
+	element3 = Json['element3']
 
 range_element1=np.arange(10,100,10) 
 range_element2=np.arange(10,100,10)
@@ -47,7 +41,7 @@ def MeanvsComp(mean, comp):
 	plt.xlabel("%s%s%s Compositions"%(element1,element2,element3))
 	plt.ylabel("Mean of Strain")
 	plt.title ("Mean of Strains vs Different Compositions")
-	plt.xticks(rotation = 90)
+	plt.xticks(rotation = 45)
 	plt.scatter(comp, mean)
 	plt.show()
 	return None
