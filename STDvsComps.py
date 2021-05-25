@@ -179,7 +179,7 @@ def initial_lmp_commands():
 
 dir_folder="post-data_NumberofAtoms_LatticeConstants_STD_Mean"
 def write_to_file ():
-	Basic=open ("%s_BasicProperties.txt"%compositions[i], "w+")
+	Basic=open ("%s_BasicProperties.txt"%compositions[i], "a")
 	Basic.write (
 			"Simulation "+str(b)+" is Finished"+"\n\n"+str(compositions[i])+"\n\n"
 			+str(LattParms[0])+str(a1)+"\n"+str(LattParms[1])+str(a2)+"\n"
@@ -198,7 +198,7 @@ def write_to_file ():
 #--------------------------- A function for flushing data on the terminal screen
 
 def Print_to_Terminal():
-	EsentialProperties = open ("essential.data", "w+")
+	EsentialProperties = open ("essential.data", "a")
 	EsentialProperties.write(
 	"\n\n\n\n\n\n"+"Simulation "+str(b)+"/%d is Finished"%len(compositions)+"\n\n"+str(compositions[i])+"\n\n"+str(LattParms[0])
 	+str(a1)+"\n"+str(LattParms[1])+str(a2)+"\n"+str(LattParms[2])+str(a3)+"\n\n"+str(NumAtoms[0])+str(Numele1Atoms)
