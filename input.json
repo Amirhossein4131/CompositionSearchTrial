@@ -2,13 +2,11 @@
   "element1" : "Ni",
   "element2" : "Co",
   "element3" : "Cr",
-  "xlo" : -5,
-  "xhi" : 5,
-  "ylo" : -5,
-  "yhi" : 5,
-  "zlo" : -5,
-  "zhi" : 5,
-  "steps" : 10000,
-  "maxiter" : 7000,
-  "swapiter" : 1000
+  "xlo" : -8,
+  "xhi" : 8,
+  "ylo" : -8,
+  "yhi" : 8,
+  "zlo" : -8,
+  "zhi" : 8,
+  "steps" : 20000
 }
