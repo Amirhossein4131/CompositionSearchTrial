@@ -21,7 +21,7 @@
   
   thermo                 100
   fix                    p1        all        box/relax   aniso 0.0 vmax 0.001
-  minimize               0.0       0.0        ${maxiter}      20000
+  minimize               0.0       0.0        7000      20000
  
   unfix                  p1
   
@@ -67,27 +67,26 @@
 
 
 #------------------------ Hybrid MD/MC: Swaping the atoms ---------------------------------#
-  reset_timestep         0
-  fix               h1       all       nvt  temp  $T  $T  ${damp_t}
-  fix               s1       all       atom/swap  25   ${swaps}   ${rnd} $T ke yes semi-grand no types 1 2
-  variable          rnd      equal     round(random(0,999999,1234))    # Generates new rnd
-  fix               s2       all       atom/swap  25   ${swaps}   ${rnd} $T ke yes semi-grand no types 2 3
-  variable          rnd      equal     round(random(0,999999,1897))    # Generates new rnd
-  fix               s3       all       atom/swap  25   ${swaps}   ${rnd} $T ke yes   semi-grand  no types 1 3
-  variable          rnd      equal     round(random(0,999999,1864))    # Generates new rnd
+# VSGCM variables
 
-  # Monitoring  the number of swap attempts and the number of swap successes by using f_ID[1] and f_ID[2], respectively.
-   
-  thermo_style      custom   step      f_s1[1] f_s1[2] f_s2[1] f_s2[2] f_s3[1] f_s3[2] etotal
   
-  run               ${swapiter}
+  variable        nsteps_mc     equal 20
+  variable        swap_fraction equal 0.25
+  variable        temperature_mc equal $T
+  variable        kappa equal 1e3
+
+
+  reset_timestep  0 
+  fix             1  all npt temp $T $T ${damp_t} iso 0.0 0.0 ${damp_p} fixedpoint 0.0 0.0 0.0
+  fix             mc all sgcmc ${nsteps_mc} ${swap_fraction} ${temperature_mc} ${deltamu1} ${deltamu2} &
+                  randseed 1234 variance ${kappa} ${target_concentration1} ${target_concentration2}
+                  
+  thermo          100
+  thermo_style    custom step temp atoms pe press  lx ly lz f_mc[1] f_mc[2] f_mc[3] f_mc[4]
+  thermo_modify   flush yes
+
+  run             ${t_eq}
   
-  unfix              h1
-  unfix              s1
-  unfix              s2
-  unfix              s3
-  
-  reset_timestep     0
   
 #------------------------------- Strain Calculation -------------------------------------------#
   
