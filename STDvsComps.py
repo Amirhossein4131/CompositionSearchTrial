@@ -25,13 +25,12 @@ with open('input.json') as json_file:
 	zlo = Json['zlo']
 	zhi = Json['zhi']
 	steps = Json['steps']
-	maxiter = Json['maxiter']
-	swapiter = Json['swapiter']
 
 # Check input data
 print ("\n\n\n\n\n","element1=",element1,"element2=",element2,"element3=",element3,
         "xlo=",xlo,"xhi=",xhi,"ylo=",ylo,"yhi=",yhi,"zlo=",zlo,"zhi=",zhi
-        ,"steps=",steps,"maxiter=",maxiter,"swapiter=",swapiter,"\n\n\n\n\n\n")	
+        ,"steps=",steps,"\n\n\n\n\n\n")	
+
 #-------------------------------------- Define What Compositions are Concerned -------------------------#
 
 range_element1=np.arange(10,100,10) 
@@ -149,7 +148,6 @@ for i in range (9):
 
 lmp.commands_list(compositioncreation(int (Number_of_Atoms/3),int(Number_of_Atoms/3),33,33,33))	#Equatomic Composition		
 
-
 #------------------------------------ Runung the Simulation for 37 Different Compositions ------------------------------# 
 
 STD = []
@@ -161,20 +159,22 @@ f = int ((steps*0.09))
 b = 1
 
 #-------------------------- Initial lammps commands
+from DeltaMu import*
 
 def initial_lmp_commands():
 	cmd = [
 	"units metal",
 	"read_data %s.data" %compositions[i],
 	"variable t_eq equal %d" %steps,
-	"variable maxiter equal %d" %maxiter,
-	"variable swaps equal %d" %swap,
-	"variable swapiter equal %d" %swapiter,
-	"pair_style meam/c",
-	"pair_coeff * * library_CoNiCrFeMn.meam Co Ni Cr Fe Mn parameters.meam %s %s %s" %(element1, element2, element3),
+	"pair_style      eam/alloy",
+	"pair_coeff      * * NiCoCr.lammps.eam Ni Co Cr",
+	"variable        deltamu1 equal %d" %DeltaMuNiCo(range_element1[i]*0.01),
+	"variable        deltamu2 equal %d" %DeltaMuNiCr(range_element1[i]*0.01),
+	"variable        target_concentration1 equal %d" %(range_element2[j]*0.01),
+	"variable        target_concentration2 equal %d" %(range_element3[k]*0.01)
 	]
 	return cmd
-
+	
 #------------------------- Write basic data information foe EACH composition explicitly
 
 dir_folder="post-data_NumberofAtoms_LatticeConstants_STD_Mean"
@@ -194,7 +194,7 @@ def write_to_file ():
 		print('dir is known')
 		os.system('mv *.txt '+dir_folder)
 	return None
-
+	
 #--------------------------- A function for flushing data on the terminal screen
 
 def Print_to_Terminal():
@@ -212,32 +212,34 @@ def Print_to_Terminal():
 	fileObject.flush()
 	fileObject.close()
 	return None
-
+	
 #--------------------------- Final "for" loop to do the simulation
 for i in range (len(compositions)):
-	lmp.commands_list(initial_lmp_commands())
-	lines = open('equilibrium.in','r').readlines()
-	for line in lines: lmp.command(line)
-	data = np.loadtxt(fname="strainvalues.data")[f :]
-	stdd = np.std (data)
-	mean = statistics.mean(data)
-	# save numbers for plots
-	STD.append (stdd)
-	Mean.append (mean)
-	# Calculate basic data to be written in file for each composition
-	prop = open('properties.data','r').read().split(" ")
-	a1 = float(prop[1]) / (xhi-xlo)
-	a2 = float(prop[2]) / (yhi-ylo)
-	a3 = float(prop[3]) / (zhi-zlo)
-	Numele1Atoms = prop[4]
-	Numele2Atoms = prop[5]
-	Numele3Atoms = prop[6]
-	# Write data to file
-	write_to_file()
-	lmp.command ("clear")
-	# Print Data on the Terminal Window
-	Print_to_Terminal()
-	b += 1
+	for j in range (len(range_element2)):
+		for k in range (len(range_element3)):
+			lmp.commands_list(initial_lmp_commands())
+			lines = open('equilibrium.in','r').readlines()
+			for line in lines: lmp.command(line)
+			data = np.loadtxt(fname="strainvalues.data")[f :]
+			stdd = np.std (data)
+			mean = statistics.mean(data)
+			# save numbers for plots
+			STD.append (stdd)
+			Mean.append (mean)
+			# Calculate basic data to be written in file for each composition
+			prop = open('properties.data','r').read().split(" ")
+			a1 = float(prop[1]) / (xhi-xlo)
+			a2 = float(prop[2]) / (yhi-ylo)
+			a3 = float(prop[3]) / (zhi-zlo)
+			Numele1Atoms = prop[4]
+			Numele2Atoms = prop[5]
+			Numele3Atoms = prop[6]
+			# Write data to file
+			write_to_file()
+			lmp.command ("clear")
+			# Print Data on the Terminal Window
+			Print_to_Terminal()
+			b += 1
 #----------------------------------------- Plots -------------------------------------------------#
 np.savetxt("STD.txt", STD)
 np.savetxt("Mean.txt", Mean)
@@ -248,4 +250,4 @@ MeanvsComp(Mean,compositions)
 
 #------------------------------------------ End --------------------------------------------------#   
 
-print ("DONE")
+print ("DONE")	
